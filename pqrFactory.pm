@@ -7,7 +7,23 @@
 
 PDB File
 
+=head1 Description
+
+This class allows us to create PQR files from PDB and RTF files that we have
+obtained previously from SwissProt.
+
 =head1 Synopsis
+ my $factory = pqrFactory -> new (
+ 	'pbd_filename' => $ARGV[0],
+	'rtf_filename' => $ARGV[1],
+	'pqr_outfile' => $ARGV[2]
+ );
+ $pqrFactory -> loadPDB	;
+ $pqrFactory -> parsePDB;
+ $pqrFactory -> loadRTF	;
+ $pqrFactory -> parseRTF;
+ $pqrFactory -> builtPQR;
+
 =cut
 package pqrFactory;
 use strict;
@@ -68,7 +84,7 @@ sub loadPDB {
 				$self -> pdb_info(\@file)
 					or die "ERROR 2 : Unable to load $filename\n";
 				print "done\n";
-
+				return 1;
 			} else {
 				print "ERROR 1 : Unable to access to $filename\n";
 			}
@@ -120,6 +136,7 @@ sub parsePDB {
 		}
 		$self->atom_entries(\%atom_hash);
 		print "done\n";
+		return 1;
 	}
 }
 
@@ -149,6 +166,7 @@ sub loadRTF {
 			$self -> rtf_info(\@rtf_file) or
 				die "ERROR 2 : Unable to load $filename\n";
 			print "done\n";
+			return 1;
 		} else {
 			die "ERROR 1 : Unable to access $filename\n";
 		}
@@ -169,16 +187,13 @@ sub parseRTF {
 				if (exists $self -> atom_entries -> {$label}) {
 					$self -> atom_entries -> {$label} -> charm_type($type);
 					$self -> atom_entries -> {$label} -> charge($charge);
-					#print $label, "\t"	;
-					#print $self -> atom_entries -> {$label} -> return_coordinates, "\t";
-					#print $self -> atom_entries -> {$label} -> charm_type, "\t";
-					#print $self -> atom_entries -> {$label} -> charge , "\n";
 				} else {
 					die "ERROR 3 : Incoherence between RTF and PDB";
 				}
 			}
 		}
 		print "done\n";
+		return 1;
 	}
 }
 
@@ -266,6 +281,7 @@ sub builtPQR {
 			print PQRFILE 'END';
 			close (PQRFILE);
 			print "done\n";
+			return 1;
 		} else {
 			die "ERROR 1 : couldn't access to $fileout\n";
 		}
