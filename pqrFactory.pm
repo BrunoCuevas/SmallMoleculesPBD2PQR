@@ -67,6 +67,7 @@ sub loadPDB {
 				my @file = <FILE>;
 				$self -> pdb_info(\@file)
 					or die "ERROR 2 : Unable to load $filename\n";
+				print "done\n";
 
 			} else {
 				print "ERROR 1 : Unable to access to $filename\n";
@@ -82,6 +83,7 @@ sub parsePDB {
 		my @pdb_file = @{$self->pdb_info};
 			my $line = shift(@pdb_file);
 		my %atom_hash;
+		print "parsing PDB\n";
 		while (@pdb_file) {
 			my $line = shift(@pdb_file)	;
 			if ($line =~ /ATOM\s{2}\s{1,4}(\d{1,4})\s{1,2}(\w{1,4})\s{1,2}(\w{3})\s{5}(\d{1})\s{6}(.\d{1,3}\.\d{3})\s{2}(.\d{1,3}\.\d{3})\s{2}(.\d{1,3}\.\d{3})\s{2}(\d\.\d{2})\s{2}(\d\.\d{2})\s*LIG/) {
@@ -117,6 +119,7 @@ sub parsePDB {
 			}
 		}
 		$self->atom_entries(\%atom_hash);
+		print "done\n";
 	}
 }
 
@@ -141,9 +144,11 @@ sub loadRTF {
 		my ($self) = @_ ;
 		my $filename = $self->rtf_filename;
 		if (open(RTF_FILE, $filename)) {
+			print "loading RTF from $filename\n";
 			my @rtf_file = <RTF_FILE> ;
 			$self -> rtf_info(\@rtf_file) or
 				die "ERROR 2 : Unable to load $filename\n";
+			print "done\n";
 		} else {
 			die "ERROR 1 : Unable to access $filename\n";
 		}
@@ -154,6 +159,7 @@ sub parseRTF {
 		my ($self) = @_ ;
 		my @rtf_info	= @{$self->rtf_info}	;
 		my $iter = 0 ;
+		print "parsing RTF\n";
 		while (@rtf_info) {
 			my $line = shift(@rtf_info);
 			if ($line =~ /^ATOM/) {
@@ -163,15 +169,16 @@ sub parseRTF {
 				if (exists $self -> atom_entries -> {$label}) {
 					$self -> atom_entries -> {$label} -> charm_type($type);
 					$self -> atom_entries -> {$label} -> charge($charge);
-					print $label, "\t"	;
-					print $self -> atom_entries -> {$label} -> return_coordinates, "\t";
-					print $self -> atom_entries -> {$label} -> charm_type, "\t";
-					print $self -> atom_entries -> {$label} -> charge , "\n";
+					#print $label, "\t"	;
+					#print $self -> atom_entries -> {$label} -> return_coordinates, "\t";
+					#print $self -> atom_entries -> {$label} -> charm_type, "\t";
+					#print $self -> atom_entries -> {$label} -> charge , "\n";
 				} else {
 					die "ERROR 3 : Incoherence between RTF and PDB";
 				}
 			}
 		}
+		print "done\n";
 	}
 }
 
@@ -181,11 +188,12 @@ sub builtPQR {
 		my $fileout = $self -> pqr_outfile;
 
 		if (open(PQRFILE, '>'.$fileout)) {
+			print "building PQR file\n";
 			my $iter = 0;
 			my $length_control	;
 			my $refill			;
-			my $length_chain = scalar(keys $self->atom_entries);
-			print $length_chain, "\n";
+			my $length_chain = scalar(keys %{$self->atom_entries});
+
 			print PQRFILE 'REMARK    File generated through pdb2pqr by BrunoCuevas', "\n";
 			print PQRFILE 'REMARK    Mail: brunocuevaszuviria@gmail.com', "\n";
 			while ($iter <= $length_chain) {
@@ -257,6 +265,7 @@ sub builtPQR {
 			}
 			print PQRFILE 'END';
 			close (PQRFILE);
+			print "done\n";
 		} else {
 			die "ERROR 1 : couldn't access to $fileout\n";
 		}
